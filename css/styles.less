@@ -1,0 +1,318 @@
+@charset "utf-8"; // 重要，fix IE8 下 font-awesome 乱码问题
+
+@hl: #00466B;
+@width: 900px;
+@padding: 50px;
+
+h1, h2, ul, li, img {
+    padding: 0;
+    margin: 0;
+}
+img {
+    border: none;
+}
+
+ul, li {
+    list-style: none;
+}
+
+html {
+    background: #eee;
+}
+
+body {
+    background: #fff;
+    width: @width;
+    padding-top: @padding;
+    margin: 30px auto;
+    font-family: "Hiragino Sans GB", "ST Heiti", "LiHei Pro Medium", "Microsoft YaHei", "Wenquanyi Micro Hei", "WenQuanYi Zen Hei";
+
+    // box shadow
+    -moz-box-shadow: 0 0 8px #777;
+    -webkit-box-shadow: 0 0 8px #777;
+    box-shadow: 0 0 8px #777;
+ 
+    behavior: url(css/PIE.htc); // 注意是相对 index.html 的路径
+}
+
+a {
+    color: #333;
+    text-decoration: none;
+    outline: none;
+    &:hover {
+        color: @hl;
+    }
+    transition: color .3s ease-out;
+}
+
+.page-nav {
+    margin-top: 20px;
+    .page {
+        &:hover {
+            a {
+                color: @hl;
+            }
+        }
+        &.current {
+            a {
+                color: @hl;
+            }
+        }
+        a {
+            display: inline-block;
+            font-size: 14px;
+            line-height: 28px;
+            text-align: center;
+            min-width: 28px;
+            color: #8a8a8a;
+            transition: color .5s linear;
+        }
+        display: inline-block;
+        margin-right: 6px;
+        border: 1px solid #ccc;
+    }
+}
+
+
+#header {
+    margin-bottom: 30px;
+    padding: 0 @padding;
+    &:after {
+        clear: both;
+        content: '';
+        display: block;
+    }
+    #logo {
+        width: 300px;
+        float: left;
+    }
+    h1 {
+        font-size: 48px;
+        line-height: 48px;
+        a {
+            color: @hl;
+        }
+    }
+    h2 {
+        font-size: 24px;
+        line-height: 24px;
+        a {
+            color: @hl;
+        }
+    }
+    ul {
+        float: right;
+        li {
+            border-right: 2px solid #ccc;
+            float: left;
+            font-weight: bold;
+            @nav-li-width: 14px;
+            font-size: @nav-li-width;
+            width: @nav-li-width;
+            padding: 3px 1em;
+            &:hover {
+                // padding-left: 1.5em;
+                // padding-right: 1.5em;
+            }
+            &:last-child {
+                border-right: none;
+            }
+            a {
+                color: #777;
+                &:hover {
+                    color: @hl;
+                }
+            }
+        }
+        &:after {
+            display: block;
+            clear: both;
+            content: '';
+        }
+    }
+}
+
+main {
+    padding: 0 @padding;
+    // 第一个 h2 不用padding-top
+    #sidebar {
+        float: right;
+        margin-right: 24px;
+        width: 200px;
+        h2 {
+            color: @hl;
+            padding-top: 30px;
+            padding-bottom: 20px;
+            font-size: 18px;
+            font-weight: normal;
+            i {
+                padding-right: 12px;
+            }
+        }
+        ul {
+            margin-left: 30px;
+            color: #777;
+            a {
+                color: #777;
+                &:hover {
+                    color: @hl;
+                }
+            }
+            li {
+                font-size: 14px;
+                line-height: 24px;
+            }
+        }
+        #search {
+            h2 {
+                padding-top: 0;
+            }
+            #search-box {
+                margin-left: 30px;
+                width: 140px;
+                border: 1px solid #ccc;
+                input {
+                    width: 100px;
+                    border: none;
+                    padding: 5px;
+                    background: transparent;
+                    outline: none;
+                }
+                i {
+                    float: right;
+                    padding: 5px;
+                    color: #ccc;
+                    cursor: pointer;
+                }
+                &:after {
+                    display: block;
+                    content: '';
+                    clear: both;
+                }
+            }
+        }
+    }
+    #sections {
+        float: left;
+        width: 550px;
+    }
+    #error {
+        padding: 40px 0;
+        h1 {
+            font-size: 24px;
+            font-weight: normal;
+            color: @hl;
+        }
+        a {
+            color: @hl;
+        }
+    }
+    .section {
+        h1 {
+            text-transform:capitalize;
+            font-size: 18px;
+            font-weight: normal;
+            color: @hl;
+            padding-top: 16px;
+            padding-bottom: 16px;
+        }
+        article {
+            .date {
+                color: #777;
+                padding-right: 6px;
+            }
+            font-size: 14px;
+            line-height: 36px;
+        }
+    }
+    .section:first-child {
+        h1 {
+            padding-top: 0;
+        }
+        width: 600px;
+    }
+    &:after {
+        clear: both;
+        content: '';
+        display: block;
+    }
+}
+
+#gallery {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    display: none;
+    #img {
+    }
+}
+
+article.single {
+    header {
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            line-height: 60px;
+            a {
+                color: @hl;
+            }
+        }
+    }
+    .content {
+        img {
+            max-width: 100%;
+            height: auto !important;
+        }
+        p {
+            line-height: 2em;
+            text-indent: 2em;
+            font-size: 14px;
+        }
+    }
+}
+
+#comments {
+    padding-top: 30px;
+}
+
+#footer {
+    margin-top: 20px;
+    padding: 20px @padding;
+    padding-right: 0;
+    font-size: 12px;
+    address {
+        font-style: normal;
+    }
+    ul {
+        float: left;
+        margin-right: 2em;
+        li {
+            padding: 3px;
+            span {
+                color: #fff;
+            }
+        }
+    }
+    #copyright {
+        color: #fff;
+    }
+    #admin {
+        color: #fff;
+        a {
+            color: #fff;
+        }
+    }
+    background: #555;
+    color: #ccc;
+    a {
+        color: #ccc;
+    }
+    &:after {
+        clear: both;
+        content: '';
+        display: block;
+    }
+}
+
+@import 'font-awesome';
