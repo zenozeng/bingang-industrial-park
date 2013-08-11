@@ -1,5 +1,7 @@
-* TODO 替换首页图片
-* TODO 仔细写写 Readme
+* DONE 替换首页图片
+  CLOSED: [2013-08-11 日 14:06]
+* DONE 仔细写写 Readme
+  CLOSED: [2013-08-09 五 17:35]
 * DONE 对于超多分页的处理
   CLOSED: [2013-08-09 五 15:47]
 * DONE IE8 下图片幻灯有时无法加载

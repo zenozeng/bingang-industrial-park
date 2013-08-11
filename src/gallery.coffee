@@ -9,7 +9,7 @@ class Gallery
     @readyCallbacks = []
     @imgs = []
     @width = 900 # gallery box width
-    @height = 200 # gallery box height
+    @height = 360 # gallery box height
     @loaded = false
 
   ###
@@ -42,6 +42,8 @@ class Gallery
       $('#gallery #img').html("<img src=\"#{@imgs[0]}\" alt=\"gallery-img\">")
       @count++
       interval = => ((that)-> that.next())(this)
+      # avoid 2 intervals exists at the same time
+      clearInterval @interval if @interval?
       @interval = setInterval interval, 3000
       @setImgScale ->
         $('#gallery').slideDown() unless $('#gallery').is(':visible')
@@ -91,15 +93,16 @@ class Gallery
   ###
   setImgScale: (callback) ->    
     $this = $('#gallery #img img')
-    $this.attr('src', $(this).attr('src')).load =>
+    that = this
+    $this.attr('src', $(this).attr('src')).load ->
       $this = $('#gallery #img img')
       imgWidth = this.width
       imgHeight = this.height
       imgScale = imgWidth / imgHeight
-      boxWidth = @width
-      boxHeight = @height
+      boxWidth = that.width
+      boxHeight = that.height
       boxScale = boxWidth / boxHeight
-      if(imgScale > boxScale) 
+      if(imgScale > boxScale)
         $this.height(boxHeight);
         newWidth = boxHeight / imgHeight * imgWidth
         left = (newWidth - boxWidth) / 2

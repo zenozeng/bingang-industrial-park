@@ -110,7 +110,7 @@ class View
           <h2><i class="icon-cogs"></i>后台管理</h2>
           <ul>
             <li><a href="http://wordpressz.sinaapp.com/wp-admin/post-new.php">撰写文章</a></li>
-            <li><a href="http://wordpressz.sinaapp.com/wp-admin//edit.php">文章管理</a></li>
+            <li><a href="http://wordpressz.sinaapp.com/wp-admin/edit.php">文章管理</a></li>
             <li><a href="http://www.uyan.cc/sites">评论管理</a></li>
             <li>
               <a href="http://wordpressz.sinaapp.com/wp-admin/post.php?post=65&action=edit">

@@ -30,7 +30,7 @@ main .section h1{text-transform:capitalize;font-size:18px;font-weight:normal;col
 main .section article{font-size:14px;line-height:36px}main .section article .date{color:#777;padding-right:6px}
 main .section:first-child{width:600px}main .section:first-child h1{padding-top:0}
 main:after{clear:both;content:'';display:block}
-#gallery{width:100%;height:200px;margin-bottom:30px;overflow:hidden;display:none}
+#gallery{width:100%;height:360px;margin-bottom:30px;overflow:hidden;display:none}
 article.single header h1{text-align:center;font-size:24px;line-height:60px}article.single header h1 a{color:#00466b}
 article.single .content img{max-width:100%;height:auto !important}
 article.single .content p{line-height:2em;text-indent:2em;font-size:14px}
