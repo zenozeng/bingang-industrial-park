@@ -16,6 +16,8 @@ class View
     @data.on 'update', (args) => @refresh()
 
     @on 'change', (args) =>
+      # scroll to top
+      $('html, body').animate({scrollTop: 0});
       # remove uyan if not post page (if post page, call it manually)
       @resetUyan() unless args.to is 'post'
       # close gallery
