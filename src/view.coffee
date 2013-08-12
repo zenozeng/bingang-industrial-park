@@ -15,9 +15,12 @@ class View
 
     @data.on 'update', (args) => @refresh()
 
-    @on 'change', (args) =>
-      # scroll to top
-      $('html, body').animate({scrollTop: 0});
+    @on 'updateneeded', (args) =>
+      # show loading
+      $('main').html '<div id="loading"><i>Loading</i><span id="bubblingG_1"></span>
+<span id="bubblingG_2"></span><span id="bubblingG_3"></span></div>'
+      # scroll to top # loading is short enough, no need to scroll to top
+      # $('html, body').animate({scrollTop: 0});
       # remove uyan if not post page (if post page, call it manually)
       @resetUyan() unless args.to is 'post'
       # close gallery
@@ -56,7 +59,7 @@ class View
       # so, call $('#index').html(...) instead of $('main').html(...)
       $('main').attr 'id', view
       
-      @trigger 'change', {from: @currentView, to: view}
+      @trigger 'updateneeded', {from: @currentView, to: view}
       @currentView = view
     else
       @currentView
