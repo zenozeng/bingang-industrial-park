@@ -14,13 +14,14 @@ class View
         </li>"
       $('nav ul').html html
 
-    @data.on 'update', (args) => @refresh()
+    @data.on 'update', (args) =>
+      # post 不刷新，避免友言被反复加载引起bug
+      @refresh() unless @current() is 'post'
+        
 
     @on 'updateneeded', (args) =>
       # show loading
       @loading()
-      # scroll to top # loading is short enough, no need to scroll to top
-      # $('html, body').animate({scrollTop: 0});
       # remove uyan if not post page (if post page, call it manually)
       @resetUyan() unless args.to is 'post'
       # close gallery
@@ -301,3 +302,5 @@ $ ->
     router.navigate "#!/search/#{keyword}"
   $('body').on 'click', '#search-box i', submitSearch
   $('body').on 'keydown', '#search-input', (e) -> submitSearch() if e.keyCode is 13
+  $(window).on 'hashchange', ->
+    $('html, body').animate {scrollTop: 0}, 200
