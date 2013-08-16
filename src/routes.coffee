@@ -6,6 +6,7 @@ class Router
 
   add: (route, callback) ->
     route = route.replace new RegExp(':\\w+', 'g'), '([^\/]+)'
+    route = route.replace new RegExp('/', 'g'), '\\/'
     @routes["^#{route}$"] = callback
 
   navigate: (url) ->
@@ -33,7 +34,7 @@ routes =
   "!/tag/:tag": (tag) -> view.tag tag
   "!/tag/:tag/:page": (tag, page) -> view.tag tag, page
   "!/categorie/:cat": (cat) -> view.categorie cat
-  "!/categorie/:cat/:page:": (cat, page) -> view.categorie cat, page
+  "!/categorie/:cat/:page": (cat, page) -> view.categorie cat, page
   "!/error": -> view.error()
   
 router.add route, fn for route, fn of routes
