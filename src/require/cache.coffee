@@ -1,5 +1,9 @@
 ###
-Cache.coffee
+Cache.coffee -- Handle cache & queue for data
+
+Requirements: underscore.js
+
+Licensed under the MIT license.
 
 Copyright (C) 2013 Zeno Zeng
 
@@ -22,7 +26,7 @@ class Cache
     @events = {}
     @tmp = {}
     @queue = {}
-    @debug = true
+    @debug = on
     defaults =
       prefix: 'myCachePrefix_'
     @opts = _.extend defaults, opts
@@ -42,9 +46,9 @@ class Cache
           keys = []
           keys.push key for key of window.localStorage
           keys
-        getItem: window.localStorage.getItem
-        setItem: window.localStorage.setItem
-        removeItem: window.localStorage.setItem
+        getItem: (key) -> window.localStorage.getItem key
+        setItem: (key, value) -> window.localStorage.setItem key, value
+        removeItem: (key) -> window.localStorage.removeItem key
 
   ###
   Trigger event
@@ -83,37 +87,48 @@ class Cache
       # tell whether should update data in the background, could be true || false || function 
       update: () ->
         lastModified > lastUpdated
+      updateAfter: (callback) ->
+        data.ready(callback)
       success: successCallback
       error: errorCallback
 
   @param [Object] args data args
   ###
   get: (args) ->
-    [id, fetch, parse, validate, update, success, error] = args
-    id = @opts.prefix + id
-    unless parse
-      parse = (data) -> data
-    unless validate
-      validate (data) = -> true
+    args.id = @opts.prefix + args.id
+    {id, update, updateAfter, success} = args
     update = true unless update?
     update = update() if typeof update is 'function'
     
-    if @cache[id]?
+    if @tmp[id]?
       # RAM Cache exists
-      callback?(@cache[id])
+      console.log "RAM::#{id}" if @debug
+      success?(@tmp[id])
     else
-      if @storage?
-        data = @storage.getItem id
-        if data? && data.timestamp? && data.data?
-          # storage Cache exists
-          callback?(data.data)
-          if update
-            args.callback = null
-            @fetch(args)
-        else
-          # no cache exist
-          @fetch args
+      storageItem = (=>
+        if @storage?
+          data = @storage.getItem id
+          if data?
+            try
+              data = JSON.parse data
+            catch e
+              return false
+            return data.data if data? && data.timestamp? && data.data?
+        false)()
 
+      if storageItem
+        console.log "Storage::#{id}" if @debug
+        success?(storageItem)
+        if update
+          console.log "Update::#{id}" if @debug
+          args.success = null
+          if updateAfter?
+            updateAfter => @fetch args
+          else
+            @fetch args
+      else
+        console.log "Fetch::#{id}" if @debug
+        @fetch args
   ###
   Return last update timestamp of cache (microtime)
 
@@ -124,9 +139,10 @@ class Cache
     id = @opts.prefix + id
     if @storage?
       data = @storage.getItem id
+      data = JSON.parse(data)
       if data? && data.timestamp? && data.data?
         return data.timestamp
-    null
+    0
 
   ###
   Fetch data, and update it in the background
@@ -150,20 +166,28 @@ class Cache
   @param [Object] args data args
   ###
   fetch: (args) ->
-    [id, fetch, parse, validate, success, error] = args
+    {id, fetch, parse, validate, success, error} = args
+
+    unless parse
+      parse = (data) -> data
+    unless validate
+      validate = (data) -> true
+    unless error
+      error = (e) => console.log e if @debug
+
     if @queue[id]
       # already exists in queue
-      callbackFn = _.once(callback)
+      console.log "Queue::#{id}"
+      callback = _.once(success)
       @on 'load', (e) ->
-        if e.id is id
-          callbackFn e
+        callback e if e.id is id
     else
       fetch (data) =>
         data = parse data
         if validate(data)
           @trigger 'load', {id: id, data: data}
           @save id, data
-          success(data)
+          success?(data)
         else
           error {name: 'DATA_INVALID_ERR'}
 
@@ -175,8 +199,11 @@ class Cache
   @param [Object] data data
   ###
   save: (id, data) ->
-    @cache[id] = data
+    console.log "Save::#{id}" if @debug
+    console.log data if @debug
+    @tmp[id] = data
     data = {timestamp: (new Date()).getTime(), data: data}
+    data = JSON.stringify(data)
     if @storage?
       try
         @storage.setItem id, data
