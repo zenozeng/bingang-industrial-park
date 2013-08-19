@@ -97,9 +97,7 @@ class Cache
   get: (args) ->
     args.id = @opts.prefix + args.id
     {id, update, updateAfter, success} = args
-    update = true unless update?
-    update = update() if typeof update is 'function'
-    
+
     if @tmp[id]?
       # RAM Cache exists
       console.log "RAM::#{id}" if @debug
@@ -119,12 +117,19 @@ class Cache
       if storageItem
         console.log "Storage::#{id}" if @debug
         success?(storageItem)
-        if update
-          console.log "Update::#{id}" if @debug
-          args.success = null
-          if updateAfter?
-            updateAfter => @fetch args
-          else
+        args.success = null
+        update = true unless update?
+        
+        if updateAfter?
+          updateAfter =>
+            update = update() if typeof update is 'function'
+            return unless update
+            console.log "Update(With Delay)::#{id}" if @debug
+            @fetch args
+        else
+          update = update() if typeof update is 'function'      
+          if update
+            console.log "Update(Now)::#{id}" if @debug
             @fetch args
       else
         console.log "Fetch::#{id}" if @debug

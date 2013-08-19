@@ -109,7 +109,7 @@ class WP
       for categorie in categories
         if categorie.title is title
           id = categorie.id
-          @posts {cat: id}, page[0], callback
+          @posts {cat: id, exclude: 'content'}, page[0], callback
 
   ###
   Get posts whose tag is TITLE

@@ -9,7 +9,7 @@ net = require 'net'
 moz = new Moz 4242, false
 
 config =
-  minify: on
+  minify: off
 
 lessc = (callback) ->
   command = spawn 'lessc', ['-x', 'css/styles.less', 'css/styles.css']
@@ -22,7 +22,7 @@ lessc = (callback) ->
 
 
 build = (callback) ->
-  src = ['require/wp', 'config', 'data', 'gallery', 'view', 'routes']
+  src = ['require/wp', 'require/cache', 'config', 'data', 'gallery', 'view', 'routes']
   src = src.map (each) -> 'src/'+each + '.coffee'
   args = ['--join', 'js/main.js', '--compile', '--bare'].concat src
   coffee = spawn 'coffee', args
