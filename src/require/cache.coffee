@@ -45,7 +45,6 @@ class Cache
         getItem: window.localStorage.getItem
         setItem: window.localStorage.setItem
         removeItem: window.localStorage.setItem
-      @storage.index = window.loc
 
   ###
   Trigger event
@@ -91,10 +90,11 @@ class Cache
   ###
   get: (args) ->
     [id, fetch, parse, validate, update, success, error] = args
-    unless validate
-      validate (data) = -> true
+    id = @opts.prefix + id
     unless parse
       parse = (data) -> data
+    unless validate
+      validate (data) = -> true
     update = true unless update?
     update = update() if typeof update is 'function'
     
@@ -104,15 +104,29 @@ class Cache
     else
       if @storage?
         data = @storage.getItem id
-        if data?
+        if data? && data.timestamp? && data.data?
           # storage Cache exists
-          callback?(data)
+          callback?(data.data)
           if update
             args.callback = null
             @fetch(args)
         else
           # no cache exist
           @fetch args
+
+  ###
+  Return last update timestamp of cache (microtime)
+
+  @param [String] id cache id
+  @return [Interger] time stamp
+  ###
+  timestamp: (id) ->
+    id = @opts.prefix + id
+    if @storage?
+      data = @storage.getItem id
+      if data? && data.timestamp? && data.data?
+        return data.timestamp
+    null
 
   ###
   Fetch data, and update it in the background
@@ -139,9 +153,9 @@ class Cache
     [id, fetch, parse, validate, success, error] = args
     if @queue[id]
       # already exists in queue
+      callbackFn = _.once(callback)
       @on 'load', (e) ->
         if e.id is id
-          callbackFn = _.once(callback)
           callbackFn e
     else
       fetch (data) =>
@@ -162,6 +176,7 @@ class Cache
   ###
   save: (id, data) ->
     @cache[id] = data
+    data = {timestamp: (new Date()).getTime(), data: data}
     if @storage?
       try
         @storage.setItem id, data
