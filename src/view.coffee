@@ -275,7 +275,6 @@ class View
   categorie: (categorie, page...) ->
     @current 'categorie'
     @data.get 'categorie', categorie, page[0], (posts) =>
-      console.log JSON.stringify(posts)
       @list 'categorie', posts, page[0]
 
   ###
