@@ -333,7 +333,7 @@ Cache = (function() {
     this.events = {};
     this.tmp = {};
     this.queue = {};
-    this.debug = true;
+    this.debug = false;
     defaults = {
       prefix: 'myCachePrefix_'
     };
