@@ -1410,6 +1410,7 @@ View = (function() {
     categorie = arguments[0], page = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     this.current('categorie');
     return this.data.get('categorie', categorie, page[0], function(posts) {
+      console.log(JSON.stringify(posts));
       return _this.list('categorie', posts, page[0]);
     });
   };
