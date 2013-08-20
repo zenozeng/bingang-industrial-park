@@ -245,11 +245,8 @@ class View
     @param [Function] callback function to handle html
     ###
     sections = (callback) =>
-      window.indexSectionsPending = config.indexSections.length
+      callback = _.after config.indexSections.length, callback
       html = ''
-      loaded = ->
-        window.indexSectionsPending--
-        callback?(html) if window.indexSectionsPending is 0
       for section in config.indexSections
         @data.get 'categorie', section, (data) ->
           posts = data.posts
@@ -259,7 +256,8 @@ class View
             </header>
           </article>"
           html += "<section class=\"section\"><header><h1>#{section}</h1></header>#{posts.join('')}</section>"
-          loaded()
+          console.log "done"
+          callback(html)
         
     sections (data) =>
       @sidebar (html) ->

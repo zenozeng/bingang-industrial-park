@@ -26,7 +26,7 @@ class Cache
     @events = {}
     @tmp = {}
     @queue = {}
-    @debug = off
+    @debug = on
     defaults =
       prefix: 'myCachePrefix_'
     @opts = _.extend defaults, opts
@@ -97,6 +97,8 @@ class Cache
   get: (args) ->
     args.id = @opts.prefix + args.id
     {id, update, updateAfter, success} = args
+
+    console.log ["get", args] if @debug
 
     if @tmp[id]?
       # RAM Cache exists

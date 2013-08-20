@@ -333,7 +333,7 @@ Cache = (function() {
     this.events = {};
     this.tmp = {};
     this.queue = {};
-    this.debug = false;
+    this.debug = true;
     defaults = {
       prefix: 'myCachePrefix_'
     };
@@ -440,6 +440,9 @@ Cache = (function() {
       _this = this;
     args.id = this.opts.prefix + args.id;
     id = args.id, update = args.update, updateAfter = args.updateAfter, success = args.success;
+    if (this.debug) {
+      console.log(["get", args]);
+    }
     if (this.tmp[id] != null) {
       if (this.debug) {
         console.log("RAM::" + id);
@@ -679,7 +682,7 @@ config = {
   baseUrl: 'http://bgic.cn/',
   indexImagesJSONP: 'http://61.153.203.166/?page_id=7&json=1',
   linksJSONP: 'http://61.153.203.166/?page_id=12&json=1',
-  indexSections: ['动态信息', '通知公告', '发展规划', '政府公文', '入区企业']
+  indexSections: ['动态信息', '通知公告', '发展规划', '相关政策', '入区企业']
 };
 
 Data = (function() {
@@ -1363,15 +1366,9 @@ View = (function() {
     */
 
     sections = function(callback) {
-      var html, loaded, section, _i, _len, _ref, _results;
-      window.indexSectionsPending = config.indexSections.length;
+      var html, section, _i, _len, _ref, _results;
+      callback = _.after(config.indexSections.length, callback);
       html = '';
-      loaded = function() {
-        window.indexSectionsPending--;
-        if (window.indexSectionsPending === 0) {
-          return typeof callback === "function" ? callback(html) : void 0;
-        }
-      };
       _ref = config.indexSections;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1383,7 +1380,8 @@ View = (function() {
             return "<article class=\"article\">            <header>              <a href=\"#!/archives/" + post.id + "\"><span class=\"date\">" + (post.date.substring(0, 10)) + "</span> " + post.title + "</a>            </header>          </article>";
           });
           html += "<section class=\"section\"><header><h1>" + section + "</h1></header>" + (posts.join('')) + "</section>";
-          return loaded();
+          console.log("done");
+          return callback(html);
         }));
       }
       return _results;
