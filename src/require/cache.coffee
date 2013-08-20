@@ -26,7 +26,7 @@ class Cache
     @events = {}
     @tmp = {}
     @queue = {}
-    @debug = on
+    @debug = off
     defaults =
       prefix: 'myCachePrefix_'
     @opts = _.extend defaults, opts
