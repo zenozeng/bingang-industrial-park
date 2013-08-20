@@ -23,4 +23,4 @@ config =
   linksJSONP: 'http://61.153.203.166/?page_id=12&json=1'
 
   # 首页显示的模块
-  indexSections: ['动态信息', '通知公告', '发展规划', '相关政策', '入区企业']
+  indexSections: [4, 9, 3, 5, 8]

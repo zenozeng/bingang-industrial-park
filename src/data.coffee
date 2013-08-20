@@ -88,7 +88,13 @@ class Data
         links = data.page.content.match(regexp)
       cacheID = 'links'
 
-    else 
+    else if method is 'categorie'
+      [title, page] = [args[0], args[1]]
+      @categorieByTitle title, page, callback
+      return
+
+    else
+      method = 'categorie' if method is 'categorieByID'
       keyArgs = args.filter (arg) -> typeof arg isnt 'function'
       cacheID = method+':'+JSON.stringify(keyArgs)
       fetch = (callback) =>
@@ -99,6 +105,14 @@ class Data
       @cache.timestamp(cacheID) < @lastModified*1000
     updateAfter = (callback) => @ready callback
     @cache.get {id: cacheID, fetch: fetch, parse: parse, update: update, success: callback, updateAfter: updateAfter}
+
+  categorieByTitle: (title, page, callback) ->
+    @get 'categories', (categories) =>
+      for categorie in categories
+        if categorie.title is title
+          id = categorie.id
+          @get 'categorieByID', {cat: id, exclude: 'content'}, page, callback
+    
 
 
 data = new Data config.wpUrl

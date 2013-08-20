@@ -136,35 +136,21 @@ WP = (function() {
   };
 
   /*
-  Get posts whose categorie is TITLE
+  Get posts whose categorie ID is ID
   
-  @param [String] title the title of categorie
+  @param [Interger] id the id of categorie
   @param [Interger] page Paged Number
   @param [Function] callback function to handle results
   */
 
 
   WP.prototype.categorie = function() {
-    var callback, page, title, _i,
-      _this = this;
-    title = arguments[0], page = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
-    return this.categories(function(categories) {
-      var categorie, id, _j, _len, _results;
-      _results = [];
-      for (_j = 0, _len = categories.length; _j < _len; _j++) {
-        categorie = categories[_j];
-        if (categorie.title === title) {
-          id = categorie.id;
-          _results.push(_this.posts({
-            cat: id,
-            exclude: 'content'
-          }, page[0], callback));
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
-    });
+    var callback, id, page, _i;
+    id = arguments[0], page = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
+    return this.posts({
+      cat: id,
+      exclude: 'content'
+    }, page[0], callback);
   };
 
   /*
@@ -440,9 +426,6 @@ Cache = (function() {
       _this = this;
     args.id = this.opts.prefix + args.id;
     id = args.id, update = args.update, updateAfter = args.updateAfter, success = args.success;
-    if (this.debug) {
-      console.log(["get", args]);
-    }
     if (this.tmp[id] != null) {
       if (this.debug) {
         console.log("RAM::" + id);
@@ -502,9 +485,6 @@ Cache = (function() {
           }
         }
       } else {
-        if (this.debug) {
-          console.log("Fetch::" + id);
-        }
         return this.fetch(args);
       }
     }
@@ -576,22 +556,29 @@ Cache = (function() {
       };
     }
     if (this.queue[id]) {
-      console.log("Queue::" + id);
+      if (this.debug) {
+        console.log("Queue::" + id);
+      }
       callback = _.once(success);
       return this.on('load', function(e) {
         if (e.id === id) {
-          return callback(e);
+          return callback(e.data);
         }
       });
     } else {
+      if (this.debug) {
+        console.log("Fetch::" + id);
+      }
+      this.queue[id] = true;
       return fetch(function(data) {
         data = parse(data);
         if (validate(data)) {
+          _this.save(id, data);
+          _this.queue[id] = false;
           _this.trigger('load', {
             id: id,
             data: data
           });
-          _this.save(id, data);
           return typeof success === "function" ? success(data) : void 0;
         } else {
           return error({
@@ -613,9 +600,6 @@ Cache = (function() {
   Cache.prototype.save = function(id, data) {
     if (this.debug) {
       console.log("Save::" + id);
-    }
-    if (this.debug) {
-      console.log(data);
     }
     this.tmp[id] = data;
     data = {
@@ -682,7 +666,7 @@ config = {
   baseUrl: 'http://bgic.cn/',
   indexImagesJSONP: 'http://61.153.203.166/?page_id=7&json=1',
   linksJSONP: 'http://61.153.203.166/?page_id=12&json=1',
-  indexSections: ['动态信息', '通知公告', '发展规划', '相关政策', '入区企业']
+  indexSections: [4, 9, 3, 5, 8]
 };
 
 Data = (function() {
@@ -772,7 +756,7 @@ Data = (function() {
 
 
   Data.prototype.get = function() {
-    var args, cacheID, callback, fetch, fn, keyArgs, method, parse, update, updateAfter, _i,
+    var args, cacheID, callback, fetch, fn, keyArgs, method, page, parse, title, update, updateAfter, _i, _ref,
       _this = this;
     method = arguments[0], args = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
     fn = callback;
@@ -814,7 +798,14 @@ Data = (function() {
         return links = data.page.content.match(regexp);
       };
       cacheID = 'links';
+    } else if (method === 'categorie') {
+      _ref = [args[0], args[1]], title = _ref[0], page = _ref[1];
+      this.categorieByTitle(title, page, callback);
+      return;
     } else {
+      if (method === 'categorieByID') {
+        method = 'categorie';
+      }
       keyArgs = args.filter(function(arg) {
         return typeof arg !== 'function';
       });
@@ -837,6 +828,27 @@ Data = (function() {
       update: update,
       success: callback,
       updateAfter: updateAfter
+    });
+  };
+
+  Data.prototype.categorieByTitle = function(title, page, callback) {
+    var _this = this;
+    return this.get('categories', function(categories) {
+      var categorie, id, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = categories.length; _i < _len; _i++) {
+        categorie = categories[_i];
+        if (categorie.title === title) {
+          id = categorie.id;
+          _results.push(_this.get('categorieByID', {
+            cat: id,
+            exclude: 'content'
+          }, page, callback));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     });
   };
 
@@ -1366,25 +1378,37 @@ View = (function() {
     */
 
     sections = function(callback) {
-      var html, section, _i, _len, _ref, _results;
-      callback = _.after(config.indexSections.length, callback);
+      var html;
       html = '';
-      _ref = config.indexSections;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        section = _ref[_i];
-        _results.push(_this.data.get('categorie', section, function(data) {
-          var posts;
-          posts = data.posts;
-          posts = posts.map(function(post) {
-            return "<article class=\"article\">            <header>              <a href=\"#!/archives/" + post.id + "\"><span class=\"date\">" + (post.date.substring(0, 10)) + "</span> " + post.title + "</a>            </header>          </article>";
-          });
-          html += "<section class=\"section\"><header><h1>" + section + "</h1></header>" + (posts.join('')) + "</section>";
-          console.log("done");
-          return callback(html);
-        }));
-      }
-      return _results;
+      return _this.data.get('categories', function(categories) {
+        var max, section, _i, _len, _results;
+        sections = config.indexSections.map(function(id) {
+          var cat, _i, _len;
+          for (_i = 0, _len = categories.length; _i < _len; _i++) {
+            cat = categories[_i];
+            if (cat.id === id) {
+              return cat.title;
+            }
+          }
+          return null;
+        });
+        callback = _.after(sections.length, callback);
+        max = 5;
+        _results = [];
+        for (_i = 0, _len = sections.length; _i < _len; _i++) {
+          section = sections[_i];
+          _results.push(this.data.get('categorie', section, 1, function(data) {
+            var posts;
+            posts = _.first(data.posts, max);
+            posts = posts.map(function(post) {
+              return "<article class=\"article\">              <header>                <a href=\"#!/archives/" + post.id + "\"><span class=\"date\">" + (post.date.substring(0, 10)) + "</span> " + post.title + "</a>              </header>            </article>";
+            });
+            html += "<section class=\"section\"><header><h1>" + section + "</h1></header>" + (posts.join('')) + "</section>";
+            return callback(html);
+          }));
+        }
+        return _results;
+      });
     };
     return sections(function(data) {
       return _this.sidebar(function(html) {

@@ -98,18 +98,14 @@ class WP
     @get method, args, callback
     
   ###
-  Get posts whose categorie is TITLE
+  Get posts whose categorie ID is ID
 
-  @param [String] title the title of categorie
+  @param [Interger] id the id of categorie
   @param [Interger] page Paged Number
   @param [Function] callback function to handle results
   ###
-  categorie: (title, page..., callback) ->
-    @categories (categories) =>
-      for categorie in categories
-        if categorie.title is title
-          id = categorie.id
-          @posts {cat: id, exclude: 'content'}, page[0], callback
+  categorie: (id, page..., callback) ->
+    @posts {cat: id, exclude: 'content'}, page[0], callback
 
   ###
   Get posts whose tag is TITLE

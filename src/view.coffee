@@ -245,19 +245,27 @@ class View
     @param [Function] callback function to handle html
     ###
     sections = (callback) =>
-      callback = _.after config.indexSections.length, callback
       html = ''
-      for section in config.indexSections
-        @data.get 'categorie', section, (data) ->
-          posts = data.posts
-          posts = posts.map (post) -> "<article class=\"article\">
-            <header>
-              <a href=\"#!/archives/#{post.id}\"><span class=\"date\">#{post.date.substring(0,10)}</span> #{post.title}</a>
-            </header>
-          </article>"
-          html += "<section class=\"section\"><header><h1>#{section}</h1></header>#{posts.join('')}</section>"
-          console.log "done"
-          callback(html)
+      @data.get 'categories', (categories) ->
+        sections = config.indexSections.map (id) ->
+          for cat in categories
+            if cat.id is id
+              return cat.title
+          null
+
+        callback = _.after sections.length, callback
+        max = 5
+
+        for section in sections
+          @data.get 'categorie', section, 1, (data) ->
+            posts = _.first(data.posts, max)
+            posts = posts.map (post) -> "<article class=\"article\">
+              <header>
+                <a href=\"#!/archives/#{post.id}\"><span class=\"date\">#{post.date.substring(0,10)}</span> #{post.title}</a>
+              </header>
+            </article>"
+            html += "<section class=\"section\"><header><h1>#{section}</h1></header>#{posts.join('')}</section>"
+            callback(html)
         
     sections (data) =>
       @sidebar (html) ->

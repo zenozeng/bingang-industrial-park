@@ -98,8 +98,6 @@ class Cache
     args.id = @opts.prefix + args.id
     {id, update, updateAfter, success} = args
 
-    console.log ["get", args] if @debug
-
     if @tmp[id]?
       # RAM Cache exists
       console.log "RAM::#{id}" if @debug
@@ -134,7 +132,6 @@ class Cache
             console.log "Update(Now)::#{id}" if @debug
             @fetch args
       else
-        console.log "Fetch::#{id}" if @debug
         @fetch args
   ###
   Return last update timestamp of cache (microtime)
@@ -184,20 +181,27 @@ class Cache
 
     if @queue[id]
       # already exists in queue
-      console.log "Queue::#{id}"
+      console.log "Queue::#{id}" if @debug
       callback = _.once(success)
       @on 'load', (e) ->
-        callback e if e.id is id
+        if e.id is id
+          callback e.data 
     else
+      console.log "Fetch::#{id}" if @debug
+      @queue[id] = true
       fetch (data) =>
         data = parse data
-        if validate(data)
+        if validate data
+          # ATTENTION: save should always before trigger & success,
+          # 否则，如果callback中有请求同样数据，
+          # 此时如果没有写入数据，那么会被丢到队列，
+          # 但是这个event已经被fire了，所以请求的回调将永远不执行
+          @save id, data 
+          @queue[id] = false
           @trigger 'load', {id: id, data: data}
-          @save id, data
           success?(data)
         else
           error {name: 'DATA_INVALID_ERR'}
-
 
   ###
   Save data to cache
@@ -207,7 +211,6 @@ class Cache
   ###
   save: (id, data) ->
     console.log "Save::#{id}" if @debug
-    console.log data if @debug
     @tmp[id] = data
     data = {timestamp: (new Date()).getTime(), data: data}
     data = JSON.stringify(data)
