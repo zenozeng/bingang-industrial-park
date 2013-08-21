@@ -245,7 +245,6 @@ class View
     @param [Function] callback function to handle html
     ###
     sections = (callback) =>
-      html = ''
       @data.get 'categories', (categories) ->
         sections = config.indexSections.map (id) ->
           for cat in categories
@@ -256,7 +255,9 @@ class View
         callback = _.after sections.length, callback
         max = 5
 
-        for section in sections
+        html = sections.map (elem) -> ''
+
+        _.each sections, (section, index) ->
           @data.get 'categorie', section, 1, (data) ->
             posts = _.first(data.posts, max)
             posts = posts.map (post) -> "<article class=\"article\">
@@ -264,8 +265,8 @@ class View
                 <a href=\"#!/archives/#{post.id}\"><span class=\"date\">#{post.date.substring(0,10)}</span> #{post.title}</a>
               </header>
             </article>"
-            html += "<section class=\"section\"><header><h1>#{section}</h1></header>#{posts.join('')}</section>"
-            callback(html)
+            html[index] = "<section class=\"section\"><header><h1>#{section}</h1></header>#{posts.join('')}</section>"
+            callback(html.join(''))
         
     sections (data) =>
       @sidebar (html) ->

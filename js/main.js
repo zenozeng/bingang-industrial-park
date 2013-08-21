@@ -24,6 +24,7 @@ WP = (function() {
   function WP(url, opts) {
     var key, value;
     this.url = url;
+    this.debug = false;
     this.opts = {
       useFakeData: false,
       postPerPage: 10,
@@ -147,6 +148,9 @@ WP = (function() {
   WP.prototype.categorie = function() {
     var callback, id, page, _i;
     id = arguments[0], page = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
+    if (this.debug) {
+      console.log(["wp:cat", id, page, callback]);
+    }
     return this.posts({
       cat: id,
       exclude: 'content'
@@ -684,13 +688,14 @@ Data = (function() {
     var _this = this;
     this.url = url;
     this.wp = new WP(this.url);
+    this.debug = false;
     this.updateList = [];
     this.wp.lastModified(function(data) {
       _this.lastModified = data.lastModified;
       return _this.trigger('ready');
     });
     this.cache = new Cache({
-      prefix: 'bingang_'
+      prefix: 'bingang_new_'
     });
     this.events = {};
   }
@@ -749,6 +754,115 @@ Data = (function() {
   };
 
   /*
+  Get data via cache.coffee
+  API see require/cache.coffee Cache.get()
+  */
+
+
+  Data.prototype.getCache = function(args) {
+    var error, fetch, id, parse, success, update, updateAfter, validate,
+      _this = this;
+    id = args.id, fetch = args.fetch, parse = args.parse, validate = args.validate, success = args.success, error = args.error;
+    update = function() {
+      return _this.cache.timestamp(id) < _this.lastModified * 1000;
+    };
+    updateAfter = function(callback) {
+      return _this.ready(callback);
+    };
+    return this.cache.get({
+      id: id,
+      fetch: fetch,
+      parse: parse,
+      update: update,
+      success: success,
+      updateAfter: updateAfter
+    });
+  };
+
+  Data.prototype.imgs = function(callback) {
+    var fetch, parse;
+    fetch = function(callback) {
+      var args;
+      args = {
+        type: 'get',
+        url: config.indexImagesJSONP,
+        dataType: 'jsonp',
+        jsonp: 'callback',
+        success: callback
+      };
+      return $.ajax(args);
+    };
+    parse = function(data) {
+      var html, images, regexp;
+      html = data.page.content;
+      regexp = new RegExp('src="([^"]*)"', 'g');
+      images = html.match(regexp);
+      return images = images.map(function(html) {
+        return html.replace(new RegExp('(src=|")', 'g'), '');
+      });
+    };
+    return this.getCache({
+      id: 'imgs',
+      fetch: fetch,
+      parse: parse,
+      success: callback
+    });
+  };
+
+  Data.prototype.links = function(callback) {
+    var fetch, parse;
+    fetch = function(callback) {
+      var args;
+      args = {
+        type: 'get',
+        url: config.linksJSONP,
+        dataType: 'jsonp',
+        jsonp: 'callback',
+        success: callback
+      };
+      return $.ajax(args);
+    };
+    parse = function(data) {
+      var links, regexp;
+      regexp = new RegExp('<a[^<>]*>[^<>]*<\/a>', 'g');
+      return links = data.page.content.match(regexp);
+    };
+    return this.getCache({
+      id: 'links',
+      fetch: fetch,
+      parse: parse,
+      success: callback
+    });
+  };
+
+  Data.prototype.categorie = function(args, callback) {
+    var page, title, _ref,
+      _this = this;
+    _ref = [args[0], args[1]], title = _ref[0], page = _ref[1];
+    return this.get('categories', function(categories) {
+      var catID, categorie, fetch, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = categories.length; _i < _len; _i++) {
+        categorie = categories[_i];
+        if (categorie.title === title) {
+          catID = categorie.id;
+          fetch = function(callback) {
+            return _this.wp.categorie(catID, page, callback);
+          };
+          _results.push(_this.getCache({
+            id: "cat:" + catID + ":page:" + page,
+            fetch: fetch,
+            success: callback
+          }));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    });
+  };
+
+  /*
   Get data via WP class, and cache data
   
   @param [String] method will call wp.method
@@ -756,56 +870,16 @@ Data = (function() {
 
 
   Data.prototype.get = function() {
-    var args, cacheID, callback, fetch, fn, keyArgs, method, page, parse, title, update, updateAfter, _i, _ref,
+    var args, cacheID, callback, fetch, keyArgs, method, _i,
       _this = this;
     method = arguments[0], args = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), callback = arguments[_i++];
-    fn = callback;
     if (method === 'imgs') {
-      fetch = function(callback) {
-        args = {
-          type: 'get',
-          url: config.indexImagesJSONP,
-          dataType: 'jsonp',
-          jsonp: 'callback',
-          success: callback
-        };
-        return $.ajax(args);
-      };
-      parse = function(data) {
-        var html, images, regexp;
-        html = data.page.content;
-        regexp = new RegExp('src="([^"]*)"', 'g');
-        images = html.match(regexp);
-        return images = images.map(function(html) {
-          return html.replace(new RegExp('(src=|")', 'g'), '');
-        });
-      };
-      cacheID = 'imgs';
+      return this.imgs(callback);
     } else if (method === 'links') {
-      fetch = function(callback) {
-        args = {
-          type: 'get',
-          url: config.linksJSONP,
-          dataType: 'jsonp',
-          jsonp: 'callback',
-          success: callback
-        };
-        return $.ajax(args);
-      };
-      parse = function(data) {
-        var links, regexp;
-        regexp = new RegExp('<a[^<>]*>[^<>]*<\/a>', 'g');
-        return links = data.page.content.match(regexp);
-      };
-      cacheID = 'links';
+      return this.links(callback);
     } else if (method === 'categorie') {
-      _ref = [args[0], args[1]], title = _ref[0], page = _ref[1];
-      this.categorieByTitle(title, page, callback);
-      return;
+      return this.categorie(args, callback);
     } else {
-      if (method === 'categorieByID') {
-        method = 'categorie';
-      }
       keyArgs = args.filter(function(arg) {
         return typeof arg !== 'function';
       });
@@ -814,42 +888,12 @@ Data = (function() {
         args.push(callback);
         return _this.wp[method].apply(_this.wp, args);
       };
+      return this.getCache({
+        id: cacheID,
+        fetch: fetch,
+        success: callback
+      });
     }
-    update = function() {
-      return _this.cache.timestamp(cacheID) < _this.lastModified * 1000;
-    };
-    updateAfter = function(callback) {
-      return _this.ready(callback);
-    };
-    return this.cache.get({
-      id: cacheID,
-      fetch: fetch,
-      parse: parse,
-      update: update,
-      success: callback,
-      updateAfter: updateAfter
-    });
-  };
-
-  Data.prototype.categorieByTitle = function(title, page, callback) {
-    var _this = this;
-    return this.get('categories', function(categories) {
-      var categorie, id, _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = categories.length; _i < _len; _i++) {
-        categorie = categories[_i];
-        if (categorie.title === title) {
-          id = categorie.id;
-          _results.push(_this.get('categorieByID', {
-            cat: id,
-            exclude: 'content'
-          }, page, callback));
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
-    });
   };
 
   return Data;
@@ -1378,10 +1422,8 @@ View = (function() {
     */
 
     sections = function(callback) {
-      var html;
-      html = '';
       return _this.data.get('categories', function(categories) {
-        var max, section, _i, _len, _results;
+        var html, max;
         sections = config.indexSections.map(function(id) {
           var cat, _i, _len;
           for (_i = 0, _len = categories.length; _i < _len; _i++) {
@@ -1394,20 +1436,20 @@ View = (function() {
         });
         callback = _.after(sections.length, callback);
         max = 5;
-        _results = [];
-        for (_i = 0, _len = sections.length; _i < _len; _i++) {
-          section = sections[_i];
-          _results.push(this.data.get('categorie', section, 1, function(data) {
+        html = sections.map(function(elem) {
+          return '';
+        });
+        return _.each(sections, function(section, index) {
+          return this.data.get('categorie', section, 1, function(data) {
             var posts;
             posts = _.first(data.posts, max);
             posts = posts.map(function(post) {
               return "<article class=\"article\">              <header>                <a href=\"#!/archives/" + post.id + "\"><span class=\"date\">" + (post.date.substring(0, 10)) + "</span> " + post.title + "</a>              </header>            </article>";
             });
-            html += "<section class=\"section\"><header><h1>" + section + "</h1></header>" + (posts.join('')) + "</section>";
-            return callback(html);
-          }));
-        }
-        return _results;
+            html[index] = "<section class=\"section\"><header><h1>" + section + "</h1></header>" + (posts.join('')) + "</section>";
+            return callback(html.join(''));
+          });
+        });
       });
     };
     return sections(function(data) {

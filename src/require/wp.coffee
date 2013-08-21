@@ -17,6 +17,7 @@ class WP
   @param [Object] opts config options
   ###
   constructor: (@url, opts) ->
+    @debug = off
     @opts =
       useFakeData: false # use fakeData for offline testing
       postPerPage: 10
@@ -105,6 +106,7 @@ class WP
   @param [Function] callback function to handle results
   ###
   categorie: (id, page..., callback) ->
+    console.log ["wp:cat", id, page, callback] if @debug
     @posts {cat: id, exclude: 'content'}, page[0], callback
 
   ###
