@@ -23,4 +23,4 @@ config =
   linksJSONP: 'http://61.153.203.166/?page_id=12&json=1'
 
   # 首页显示的模块
-  indexSections: [4, 9, 3, 5, 8]
+  indexSections: [4, 3, 5, 8]

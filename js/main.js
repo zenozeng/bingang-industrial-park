@@ -670,7 +670,7 @@ config = {
   baseUrl: 'http://bgic.cn/',
   indexImagesJSONP: 'http://61.153.203.166/?page_id=7&json=1',
   linksJSONP: 'http://61.153.203.166/?page_id=12&json=1',
-  indexSections: [4, 9, 3, 5, 8]
+  indexSections: [4, 3, 5, 8]
 };
 
 Data = (function() {
@@ -1423,7 +1423,7 @@ View = (function() {
 
     sections = function(callback) {
       return _this.data.get('categories', function(categories) {
-        var html, max;
+        var html;
         sections = config.indexSections.map(function(id) {
           var cat, _i, _len;
           for (_i = 0, _len = categories.length; _i < _len; _i++) {
@@ -1435,16 +1435,15 @@ View = (function() {
           return null;
         });
         callback = _.after(sections.length, callback);
-        max = 5;
         html = sections.map(function(elem) {
           return '';
         });
         return _.each(sections, function(section, index) {
           return this.data.get('categorie', section, 1, function(data) {
             var posts;
-            posts = _.first(data.posts, max);
+            posts = _.first(data.posts, 5);
             posts = posts.map(function(post) {
-              return "<article class=\"article\">              <header>                <a href=\"#!/archives/" + post.id + "\"><span class=\"date\">" + (post.date.substring(0, 10)) + "</span> " + post.title + "</a>              </header>            </article>";
+              return "<article class=\"article\"><header><a href=\"#!/archives/" + post.id + "\"><span class=\"date\">" + (post.date.substring(0, 10)) + "</span> " + post.title + "</a></header></article>";
             });
             html[index] = "<section class=\"section\"><header><h1>" + section + "</h1></header>" + (posts.join('')) + "</section>";
             return callback(html.join(''));

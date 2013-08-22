@@ -253,18 +253,14 @@ class View
           null
 
         callback = _.after sections.length, callback
-        max = 5
 
         html = sections.map (elem) -> ''
 
         _.each sections, (section, index) ->
           @data.get 'categorie', section, 1, (data) ->
-            posts = _.first(data.posts, max)
-            posts = posts.map (post) -> "<article class=\"article\">
-              <header>
-                <a href=\"#!/archives/#{post.id}\"><span class=\"date\">#{post.date.substring(0,10)}</span> #{post.title}</a>
-              </header>
-            </article>"
+            posts = _.first(data.posts, 5)
+            posts = posts.map (post) ->
+              "<article class=\"article\"><header><a href=\"#!/archives/#{post.id}\"><span class=\"date\">#{post.date.substring(0,10)}</span> #{post.title}</a></header></article>"
             html[index] = "<section class=\"section\"><header><h1>#{section}</h1></header>#{posts.join('')}</section>"
             callback(html.join(''))
         
