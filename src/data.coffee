@@ -15,7 +15,7 @@ class Data
     @wp.lastModified (data) =>
       @lastModified = data.lastModified
       @trigger 'ready'
-    @cache = new Cache {prefix: 'bingang_new_'}
+    @cache = new Cache {prefix: 'bingang_new2_'}
     @events = {}
 
   ###

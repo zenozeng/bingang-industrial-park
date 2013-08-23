@@ -670,7 +670,7 @@ config = {
   baseUrl: 'http://bgic.cn/',
   indexImagesJSONP: 'http://61.153.203.166/?page_id=7&json=1',
   linksJSONP: 'http://61.153.203.166/?page_id=12&json=1',
-  indexSections: [4, 3, 5, 8]
+  indexSections: [4, 9, 3, 5, 8]
 };
 
 Data = (function() {
@@ -695,7 +695,7 @@ Data = (function() {
       return _this.trigger('ready');
     });
     this.cache = new Cache({
-      prefix: 'bingang_new_'
+      prefix: 'bingang_new2_'
     });
     this.events = {};
   }
